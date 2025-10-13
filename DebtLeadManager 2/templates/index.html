@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Leads Campaign Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn:hover {
+            background-color: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-loading { background-color: #ffc107; }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .leads-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .pagination-btn {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #5a67d8;
+        }
+
+        .pagination-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .table-wrapper {
+            overflow: auto;
+            scroll-behavior: smooth;
+            max-height: 600px;
+        }
+
+        .leads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leads-table th {
+            background-color: #f8f9fa;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .leads-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .leads-table th.sortable:hover {
+            background-color: #e9ecef;
+        }
+
+        .leads-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .leads-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .lead-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-new { background-color: #e3f2fd; color: #1976d2; }
+        .status-contacted { background-color: #fff3e0; color: #f57c00; }
+        .status-qualified { background-color: #e8f5e8; color: #388e3c; }
+        .status-closed { background-color: #fce4ec; color: #c2185b; }
+
+        .loading, .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: #6c757d;
+        }
+
+        .error {
+            text-align: center;
+            padding: 4rem;
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2rem; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .stats { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Debt Leads Campaign Management</h1>
+            <p>Manage and track your debt collection leads effectively</p>
+        </div>
+
+        <div class="stats" id="statsContainer"></div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search leads by name, email, phone, or debt amount...">
+            </div>
+            <button class="btn" id="refreshBtn">Refresh Data</button>
+            <div class="status-indicator">
+                <span class="status-dot status-loading" id="statusDot"></span>
+                <span id="statusText">Loading...</span>
+            </div>
+        </div>
+
+        <div class="leads-container">
+            <div id="leadsContent">
+                <div class="loading">Loading debt leads...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://n8n.srv884802.hstgr.cloud/webhook/nd_load_debt_leads';
+        const DASHBOARD_API_URL = '/api/dashboard-data';
+        
+        const state = {
+            allLeads: [],
+            filteredLeads: [],
+            dashboardData: {},
+            currentSort: { column: null, direction: 'desc' }
+        };
+
+        const dom = {
+            searchInput: document.getElementById('searchInput'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            statusDot: document.getElementById('statusDot'),
+            statusText: document.getElementById('statusText'),
+            leadsContent: document.getElementById('leadsContent'),
+            statsContainer: document.getElementById('statsContainer')
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchLeads();
+            fetchDashboardData();
+            dom.searchInput.addEventListener('input', handleSearch);
+            dom.refreshBtn.addEventListener('click', () => {
+                fetchLeads();
+                fetchDashboardData();
+            });
+        });
+
+        function updateStatus(type, message) {
+            dom.statusDot.className = `status-dot status-${type}`;
+            dom.statusText.textContent = message;
+        }
+
+        async function fetchLeads() {
+            updateStatus('loading', 'Fetching leads...');
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+                state.allLeads = Array.isArray(data) ? data : (data.leads || data.data || []);
+                
+                sortByDate();
+                updateStatus('success', `Loaded ${state.allLeads.length} leads`);
+                renderLeads();
+                renderStats();
+            } catch (error) {
+                console.error('Error fetching leads:', error);
+                updateStatus('error', 'Failed to load leads');
+                renderError(error.message);
+            }
+        }
+
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch(DASHBOARD_API_URL, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error(`Dashboard API error! status: ${response.status}`);
+
+                const data = await response.json();
+                state.dashboardData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+                renderStats();
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                state.dashboardData = {
+                    "Total Patients In Collection": 0,
+                    "Total Outstanding Debt In Collection": 0,
+                    "Collected Debt": 0,
+                    "Number of Debts Cleared": 0
+                };
+                renderStats();
+            }
+        }
+
+        function handleSearch() {
+            const term = dom.searchInput.value.toLowerCase().trim();
+            state.filteredLeads = term ? state.allLeads.filter(lead => 
+                Object.values(lead).some(v => v?.toString().toLowerCase().includes(term))
+            ) : [...state.allLeads];
+            
+            sortLeads();
+            renderLeads();
+        }
+
+        function sortByDate() {
+            const dateFields = ['Added Date', 'Date Added', 'Created Date', 'created', 'date'];
+            const dateField = state.allLeads.length > 0 
+                ? dateFields.find(f => Object.keys(state.allLeads[0]).includes(f))
+                : null;
+            
+            if (dateField) {
+                state.currentSort = { column: dateField, direction: 'desc' };
+                state.allLeads.sort((a, b) => {
+                    const dateA = new Date(a[dateField]);
+                    const dateB = new Date(b[dateField]);
+                    if (isNaN(dateA) && isNaN(dateB)) return 0;
+                    if (isNaN(dateA)) return 1;
+                    if (isNaN(dateB)) return -1;
+                    return dateB - dateA;
+                });
+            }
+            state.filteredLeads = [...state.allLeads];
+        }
+
+        function sortLeads() {
+            if (!state.currentSort.column) return;
+            
+            const isDate = state.currentSort.column.toLowerCase().includes('date');
+            
+            state.filteredLeads.sort((a, b) => {
+                let valA = a[state.currentSort.column];
+                let valB = b[state.currentSort.column];
+                
+                if (isDate) {
+                    valA = new Date(valA);
+                    valB = new Date(valB);
+                    if (isNaN(valA) && isNaN(valB)) return 0;
+                    if (isNaN(valA)) return 1;
+                    if (isNaN(valB)) return -1;
+                } else {
+                    valA = valA?.toString().toLowerCase() || '';
+                    valB = valB?.toString().toLowerCase() || '';
+                }
+                
+                const dir = state.currentSort.direction === 'asc' ? 1 : -1;
+                return valA < valB ? -dir : valA > valB ? dir : 0;
+            });
+        }
+
+        function handleSort(column) {
+            state.currentSort = state.currentSort.column === column
+                ? { column, direction: state.currentSort.direction === 'asc' ? 'desc' : 'asc' }
+                : { column, direction: 'asc' };
+            sortLeads();
+            renderLeads();
+        }
+
+        function renderStats() {
+            const fmt = (val, isCurrency) => isCurrency 
+                ? `$${(parseFloat(val) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : parseInt(val) || 0;
+
+            dom.statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${fmt(state.dashboardData['Total Patients In Collection'])}</div>
+                    <div class="stat-label">Total Patients In Collection</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${fmt(state.dashboardData['Total Outstanding Debt In Collection'], true)}</div>
+                    <div class="stat-label">Total Outstanding Debt In Collection</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${fmt(state.dashboardData['Collected Debt'], true)}</div>
+                    <div class="stat-label">Collected Debt</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${fmt(state.dashboardData['Number of Debts Cleared'])}</div>
+                    <div class="stat-label">Number of Debts Cleared</div>
+                </div>
+            `;
+        }
+
+        function renderLeads() {
+            if (state.filteredLeads.length === 0) {
+                dom.leadsContent.innerHTML = `
+                    <div class="empty-state">
+                        <h3>${state.allLeads.length === 0 ? 'No leads available' : 'No leads match your search'}</h3>
+                        <p>${state.allLeads.length === 0 ? 'Click "Refresh Data" to load the latest leads.' : 'Try adjusting your search criteria.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const keys = [...new Set(state.filteredLeads.flatMap(l => Object.keys(l)))].filter(k => k !== 'id');
+            
+            const tableHTML = `
+                <div class="pagination-controls">
+                    <button class="pagination-btn" onclick="scrollTable(-300)">← Previous</button>
+                    <span style="font-size: 0.875rem; color: #6c757d;">Navigate columns using arrows</span>
+                    <button class="pagination-btn" onclick="scrollTable(300)">Next →</button>
+                </div>
+                <div class="table-wrapper" id="tableWrapper" onscroll="updatePaginationButtons()">
+                    <table class="leads-table">
+                        <thead>
+                            <tr>${keys.map(k => {
+                                const isDate = k.toLowerCase().includes('date');
+                                const sorted = state.currentSort.column === k;
+                                const arrow = sorted ? (state.currentSort.direction === 'asc' ? ' ↑' : ' ↓') : '';
+                                return `<th class="${isDate ? 'sortable' : ''}" ${isDate ? `onclick="handleSort('${k}')"` : ''}>${formatHeader(k)}${arrow}</th>`;
+                            }).join('')}</tr>
+                        </thead>
+                        <tbody>
+                            ${state.filteredLeads.map(lead => `
+                                <tr>${keys.map(k => `<td>${createCell(k, lead[k], lead)}</td>`).join('')}</tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            dom.leadsContent.innerHTML = tableHTML;
+            setTimeout(updatePaginationButtons, 100);
+        }
+
+        function renderError(msg) {
+            dom.leadsContent.innerHTML = `
+                <div class="error">
+                    <h3>Error Loading Leads</h3>
+                    <p>${msg}</p>
+                    <p>Please check your internet connection and try again.</p>
+                </div>
+            `;
+        }
+
+        function scrollTable(amount) {
+            const wrapper = document.getElementById('tableWrapper');
+            if (wrapper) {
+                wrapper.scrollBy({ left: amount, behavior: 'smooth' });
+                setTimeout(updatePaginationButtons, 300);
+            }
+        }
+
+        function updatePaginationButtons() {
+            const wrapper = document.getElementById('tableWrapper');
+            const buttons = document.querySelectorAll('.pagination-btn');
+            if (wrapper && buttons.length === 2) {
+                const { scrollLeft, scrollWidth, clientWidth } = wrapper;
+                buttons[0].disabled = scrollLeft <= 0;
+                buttons[1].disabled = scrollLeft >= scrollWidth - clientWidth;
+            }
+        }
+
+        function formatHeader(key) {
+            return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).replace(/_/g, ' ');
+        }
+
+        function createCell(key, value, lead) {
+            const keyLower = key.toLowerCase();
+            
+            // Status with dropdown for Final Status - always show dropdown even if empty
+            if (keyLower.includes('status')) {
+                if (key === 'Final Status') {
+                    const phone = lead['Phone Number'] || lead['phone'] || '';
+                    const displayValue = value || '-';
+                    const statusClass = value ? getStatusClass(value) : 'status-new';
+                    return `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="lead-status ${statusClass}" data-phone="${phone}" data-original="${displayValue}">${displayValue}</span>
+                            <select onchange="updateLeadStatus(this)" style="padding: 0.2rem 0.4rem; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.75rem;">
+                                <option value="">Change Status</option>
+                                <option value="donotcall">Do Not Call</option>
+                                <option value="paid_at_office">Paid at Office</option>
+                                <option value="write_off">Write-Off</option>
+                                <option value="settled_debt">Settled Debt</option>
+                            </select>
+                        </div>
+                    `;
+                }
+                const statusClass = getStatusClass(value);
+                return `<span class="lead-status ${statusClass}">${value}</span>`;
+            }
+            
+            if (!value) return '-';
+            
+            // Currency (convert cents to dollars)
+            if (keyLower.includes('amount') || keyLower.includes('debt') || keyLower.includes('balance')) {
+                const num = parseFloat(value);
+                if (!isNaN(num)) return `$${(num / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+            
+            // Dates
+            if (keyLower.includes('date') || keyLower.includes('created')) {
+                const date = new Date(value);
+                if (!isNaN(date)) return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            
+            // Phone
+            if (keyLower.includes('phone')) {
+                const ph = value.toString().replace(/\D/g, '');
+                if (ph.length === 10) return `(${ph.slice(0,3)}) ${ph.slice(3,6)}-${ph.slice(6)}`;
+            }
+            
+            // Payment link
+            if (keyLower.includes('link') && value.toString().startsWith('http')) {
+                const firstName = lead['First Name'] || lead['first_name'] || '';
+                const phone = lead['Phone Number'] || lead['phone'] || '';
+                return `<button onclick="sendPayLink('${firstName}', '${phone}', '${value}')" style="background: #667eea; color: white; border: none; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">Text Link</button>`;
+            }
+            
+            // Email
+            if (keyLower.includes('email') && value.includes('@')) {
+                return `<a href="mailto:${value}" style="color: #667eea; text-decoration: none;">${value}</a>`;
+            }
+            
+            return value.toString();
+        }
+
+        function getStatusClass(status) {
+            const s = status.toLowerCase();
+            if (s.includes('payment') && s.includes('confirmed')) return 'status-qualified';
+            if (s.includes('pending') || s.includes('new')) return 'status-new';
+            if (s.includes('contacted') || s.includes('progress')) return 'status-contacted';
+            if (s.includes('confirmed') || s.includes('completed') || s.includes('qualified')) return 'status-qualified';
+            if (s.includes('closed') || s.includes('declined') || s.includes('failed')) return 'status-closed';
+            return 'status-new';
+        }
+
+        async function updateLeadStatus(selectEl) {
+            const statusSpan = selectEl.previousElementSibling;
+            const phone = statusSpan.dataset.phone;
+            const updateType = selectEl.value;
+            
+            if (!updateType || !phone) {
+                if (!phone) alert('Phone number not found');
+                selectEl.value = '';
+                return;
+            }
+            
+            // Store original values before making the request
+            const originalText = statusSpan.dataset.original || statusSpan.textContent;
+            const originalClass = statusSpan.className;
+            
+            statusSpan.textContent = 'Updating...';
+            statusSpan.style.background = '#ffc107';
+            
+            try {
+                const response = await fetch('/api/update-lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: phone, update_string: updateType })
+                });
+                
+                if (response.ok) {
+                    // Map status values to display text and CSS classes
+                    const statusMap = {
+                        'donotcall': { text: 'Do Not Call', class: 'status-closed' },
+                        'paid_at_office': { text: 'Paid at Office', class: 'status-qualified' },
+                        'write_off': { text: 'Write-Off', class: 'status-closed' },
+                        'settled_debt': { text: 'Settled Debt', class: 'status-qualified' }
+                    };
+                    
+                    const statusInfo = statusMap[updateType] || { text: updateType, class: 'status-new' };
+                    statusSpan.textContent = statusInfo.text;
+                    statusSpan.className = `lead-status ${statusInfo.class}`;
+                    statusSpan.dataset.original = statusInfo.text;
+                    statusSpan.style.background = '';
+                } else {
+                    throw new Error('Update failed');
+                }
+            } catch (error) {
+                statusSpan.textContent = 'Update Failed';
+                statusSpan.style.background = '#dc3545';
+                setTimeout(() => {
+                    statusSpan.textContent = originalText;
+                    statusSpan.className = originalClass;
+                    statusSpan.style.background = '';
+                }, 3000);
+            }
+            selectEl.value = '';
+        }
+
+        async function sendPayLink(firstName, phone, link) {
+            const btn = event.target;
+            if (!phone) {
+                btn.textContent = 'No Phone';
+                btn.style.background = '#dc3545';
+                setTimeout(() => {
+                    btn.textContent = 'Text Link';
+                    btn.style.background = '#667eea';
+                }, 2000);
+                return;
+            }
+            
+            btn.textContent = 'Sending...';
+            btn.style.background = '#ffc107';
+            
+            try {
+                const response = await fetch('/api/send-pay-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ first_name: firstName, phone_number: phone, payment_link: link })
+                });
+                
+                btn.textContent = response.ok ? 'Sent!' : 'Send Failed';
+                btn.style.background = response.ok ? '#28a745' : '#dc3545';
+            } catch (error) {
+                btn.textContent = 'Send Failed';
+                btn.style.background = '#dc3545';
+            }
+            
+            setTimeout(() => {
+                btn.textContent = 'Text Link';
+                btn.style.background = '#667eea';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
