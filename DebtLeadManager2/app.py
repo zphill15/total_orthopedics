@@ -18,7 +18,7 @@ def get_dashboard_data():
     try:
         # Fetch data from the n8n webhook
         response = requests.get(
-            'https://n8n.srv884802.hstgr.cloud/webhook/nd_load_dashboard_data',
+            'https://n8n.srv884802.hstgr.cloud/webhook/to_load_dashboard_data',
             timeout=30
         )
         

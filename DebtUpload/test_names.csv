@@ -1,5 +1,6 @@
-First Name,Phone,Amount
-Baptiste, Shania,555-1234,1500
-John,555-5678,2000
-Mary, Jane,555-9876,750
-Robert,555-4321,3000
+First Name,Phone,Amount,Date of Service
+Baptiste, Shania,555-1234,1500,2024-01-15
+John,555-5678,2000,2024-02-20
+Mary, Jane,555-9876,750,2024-03-10
+Robert,555-4321,3000,2024-01-05
+Aleksa,581-278,321,2024-04-18

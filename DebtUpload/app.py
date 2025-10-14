@@ -384,6 +384,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <option value="">-- Select Column --</option>
                     </select>
                 </div>
+
+                <div class="mapping-row">
+                    <label for="dateOfServiceMapping">Date of Service:</label>
+                    <select id="dateOfServiceMapping" name="dateOfServiceMapping">
+                        <option value="">-- Select Column --</option>
+                    </select>
+                </div>
             </div>
 
             <div class="name-choice-section" id="nameChoiceSection">
@@ -535,7 +542,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
         function setupMapping() {
             const mappingSection = document.getElementById('mappingSection');
-            const selects = ['firstNameMapping', 'phoneMapping', 'amountMapping'];
+            const selects = ['firstNameMapping', 'phoneMapping', 'amountMapping', 'dateOfServiceMapping'];
             
             selects.forEach(selectId => {
                 const select = document.getElementById(selectId);
@@ -650,9 +657,10 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             const firstNameMapping = document.getElementById('firstNameMapping').value;
             const phoneMapping = document.getElementById('phoneMapping').value;
             const amountMapping = document.getElementById('amountMapping').value;
+            const dateOfServiceMapping = document.getElementById('dateOfServiceMapping').value;
             const submitBtn = document.getElementById('submitBtn');
             
-            const isValid = firstNameMapping && phoneMapping && amountMapping && csvData.length > 0;
+            const isValid = firstNameMapping && phoneMapping && amountMapping && dateOfServiceMapping && csvData.length > 0;
             submitBtn.disabled = !isValid;
         }
 
@@ -697,12 +705,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         return {
                             first_name: firstName,
                             phone_number: row[document.getElementById('phoneMapping').value],
-                            amount_owed: row[document.getElementById('amountMapping').value]
+                            amount_owed: row[document.getElementById('amountMapping').value],
+                            date_of_service: row[document.getElementById('dateOfServiceMapping').value]
                         };
                     })
                 };
 
-                const response = await fetch('https://n8n.srv884802.hstgr.cloud/webhook/debt_form_upload', {
+                const response = await fetch('https://n8n.srv884802.hstgr.cloud/webhook-test/586c72fa-6f2d-46ab-a4cf-ac9a2375a012', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

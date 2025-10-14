@@ -1,5 +1,4 @@
-"First Name","Phone","Amount"
-"Baptiste, Shania","555-1234","1500"
-"John","555-5678","2000"
-"Mary, Jane","555-9876","750"
-"Robert","555-4321","3000"
+First name,Phone Number,Date of Service,Total Amount Owed
+Sharon,6096941623,1/31/2025,$25.00
+Julianna,6096941624,9/2/2025,$98.00
+Xiomara,6096941625,8/26/2025,$102.20
